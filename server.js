@@ -1,6 +1,7 @@
 const http=require("http"),fs=require("fs"),path=require("path"),https=require("https");
 const root=__dirname;
-const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",".png":"image/png",".jpg":"image/jpeg",".svg":"image/svg+xml"};
+const farmingApi=require("./farming-companion/api");
+const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",".png":"image/png",".jpg":"image/jpeg",".svg":"image/svg+xml",".webp":"image/webp"};
 
 function proxyWikiLoadout(req,res,url){
  const id=url.searchParams.get("id");
@@ -29,6 +30,8 @@ function proxyWikiLoadout(req,res,url){
 http.createServer((req,res)=>{
  const url=new URL(req.url,"http://localhost");
  if(url.pathname==="/runeroute/wiki-loadout") return proxyWikiLoadout(req,res,url);
+ if(url.pathname==="/farming-companion/api/prices"||url.pathname==="/farming-companion/api/farming") return farmingApi.handle(req,res,url);
+ if(url.pathname==="/farming-companion"){res.writeHead(308,{Location:"/farming-companion/"});return res.end()}
 
  let pathname=decodeURIComponent(url.pathname);
  if(pathname.endsWith("/")) pathname+="index.html";
