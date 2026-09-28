@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RuneRoute — OSRS PvM Trip & Profit Planner</title>
+<style>
+:root{--bg:#0c0f11;--panel:#151a1f;--panel2:#1b2229;--line:#303944;--text:#f4f6f8;--muted:#9da9b5;--gold:#d8b65d;--green:#75c9a4;--red:#e47b7b;--blue:#79b9e8}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b0e10,#11161a);color:var(--text);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1120px;margin:auto;padding:24px}.hero{margin:6px 0 18px}h1{font-size:clamp(36px,6vw,58px);line-height:1;margin:0;letter-spacing:-.04em}.hero p{color:var(--muted);max-width:780px}
+.back{display:inline-block;color:#d8b65d;text-decoration:none;margin-bottom:16px;font-weight:700}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px}.section{padding:17px;margin-top:14px}h2{margin:0 0 4px;font-size:20px}.hint{color:var(--muted);font-size:13px;margin-bottom:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+label{display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+input,select{width:100%;background:#0f1418;border:1px solid #3a4651;color:var(--text);border-radius:9px;padding:10px 11px;font:inherit}
+button{font:inherit;cursor:pointer}.btn{border:1px solid #45515d;background:#222a32;color:#eef1f4;border-radius:9px;padding:10px 12px}.btn.primary{background:var(--gold);border-color:var(--gold);color:#171309;font-weight:850}
+.loadoutStatus{margin-top:10px;padding:11px 12px;border-radius:10px;background:#11171b;border:1px solid var(--line);font-size:13px}.ok{border-color:#315a47;color:#cfe9dc}.bad{border-color:#633d3d;color:#f0d0d0}
+.gearList{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.gearPill{font-size:12px;background:#202831;border:1px solid #35414d;padding:6px 8px;border-radius:999px}
+.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:14px;margin-top:14px}
+.heroRec{background:linear-gradient(135deg,#17241c,#151a20);border:1px solid #355042;border-radius:13px;padding:15px}.kicker{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#a6d3bd;font-weight:850}.rec{font-size:27px;font-weight:850;margin-top:4px}.rec b{color:#efd078}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}.metric{background:#10151a;border:1px solid var(--line);border-radius:11px;padding:12px}.v{font-size:25px;font-weight:850;color:var(--gold)}.n{font-size:11px;color:var(--muted)}
+.profit{margin-top:12px}.money{font-size:30px;font-weight:900}.positive{color:var(--green)}.negative{color:var(--red)}
+.row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}.sub{font-size:12px;color:var(--muted)}
+.upgrade{padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;margin-top:9px}.upgradeTop{display:flex;justify-content:space-between;gap:10px}.upgradeName{font-weight:800}.cost{color:#f0cb72;font-weight:800}.gain{color:var(--green);font-weight:800}.warning{padding:11px;margin-top:10px;border-radius:9px;background:#201717;border:1px solid #5a3535;color:#ecd0cf;font-size:12px}
+details{margin-top:14px}summary{cursor:pointer;font-weight:800;padding:13px 15px}.detailBody{padding:0 15px 15px}
+footer{color:#77838e;font-size:11px;padding:20px 2px}
+@media(max-width:820px){.layout,.grid,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <a class="back" href="/">← All OSRS tools</a>
+ <div class="hero"><h1>RuneRoute</h1><p>Paste your OSRS Wiki DPS loadout, enter the TTK the Wiki gives you, and RuneRoute turns it into an inventory plan, trip estimate, profit forecast and upgrade shortlist.</p></div>
+
+ <div class="card section">
+   <h2>1. Import your Wiki setup</h2>
+   <div class="hint">In the OSRS Wiki DPS calculator choose <b>Share → Copy link</b>, then paste it here.</div>
+   <div class="grid3">
+     <div><label>Wiki DPS share link</label><input id="shareLink" value="" placeholder="https://dps.osrs.wiki?id=..."></div>
+     <div><label>Loadout</label><select id="loadoutSelect"><option value="0">Loadout 1</option></select></div>
+     <div style="display:flex;align-items:end"><button id="importBtn" class="btn primary" style="width:100%">Import gear</button></div>
+   </div>
+   <div id="loadoutStatus" class="loadoutStatus">Paste a link and import it. Your gear will appear here.</div>
+   <div id="gearList" class="gearList"></div>
+ </div>
+
+ <div class="layout">
+  <div>
+   <div class="card section">
+    <h2>2. Tell us the result</h2>
+    <div class="hint">RuneRoute doesn't try to reproduce the Wiki combat engine. Enter its average TTK and we handle the trip maths.</div>
+    <div class="grid">
+      <div><label>Boss</label><select id="boss"><option value="thermy">Thermonuclear Smoke Devil</option></select></div>
+      <div><label>Target KC</label><input id="target" type="number" value="71" min="1"></div>
+      <div><label>Average TTK (seconds)</label><input id="ttk" type="number" step=".1" value="28.9"></div>
+      <div><label>Planning style</label><select id="risk"><option value="safe" selected>Safe</option><option value="expected">Expected RNG</option><option value="greedy">Minimal supplies</option></select></div>
+    </div>
+   </div>
+
+   <div class="card section">
+    <h2>3. Upgrade lens</h2>
+    <div class="hint">Suggestions are generated from the imported gear. Price is fetched live when the Wiki price API is available. TTK changes are estimates until you verify the swap in the Wiki DPS calculator.</div>
+    <div id="upgradeList"></div>
+    <div class="warning">The Wiki calculator has boss-specific accuracy, integer max-hit breakpoints and special-case mechanics. RuneRoute identifies sensible swaps automatically, but the Wiki remains authoritative for the exact new TTK.</div>
+   </div>
+
+   <details class="card">
+    <summary>Profit assumptions</summary>
+    <div class="detailBody">
+      <div class="grid">
+        <div><label>Expected gross loot per kill (GP)</label><input id="lootPerKill" type="number" value="26700"></div>
+        <div><label>Extra fixed cost per trip (GP)</label><input id="fixedCost" type="number" value="0"></div>
+      </div>
+      <div class="hint" style="margin-top:9px">Gross loot/kill is editable because drop-table EV moves with GE prices. Rune costs and prayer potion prices are fetched live where possible.</div>
+    </div>
+   </details>
+  </div>
+
+  <div>
+   <div class="card section">
+    <div class="heroRec"><div class="kicker">Recommended trip</div><div id="headline" class="rec">Calculating…</div></div>
+    <div class="metrics">
+      <div class="metric"><div id="tripKc" class="v">–</div><div class="n">Expected KC / trip</div></div>
+      <div class="metric"><div id="charges" class="v">–</div><div class="n">Weapon charges / target</div></div>
+      <div class="metric"><div id="duration" class="v">–</div><div class="n">Target duration</div></div>
+      <div class="metric"><div id="pots" class="v">–</div><div class="n">Prayer pots to bring</div></div>
+    </div>
+   </div>
+
+   <div class="card section">
+     <h2>Expected profit</h2><div id="profitValue" class="money">–</div><div id="profitPerHour" class="sub"></div>
+     <div class="profit">
+       <div class="row"><div>Gross loot<div class="sub">Target KC × expected loot/kill</div></div><b id="gross">–</b></div>
+       <div class="row"><div>Weapon charge cost<div class="sub" id="chargeCostNote">Live rune prices where available</div></div><b id="weaponCost">–</b></div>
+       <div class="row"><div>Prayer potion cost<div class="sub">Starting supplies</div></div><b id="prayerCost">–</b></div>
+       <div class="row"><div>Other costs<div class="sub">User-entered fixed cost</div></div><b id="otherCost">–</b></div>
+     </div>
+   </div>
+
+   <div class="card section"><h2>Imported gear</h2><div id="gearSummary" class="hint">No loadout imported yet.</div></div>
+  </div>
+ </div>
+ <footer>RuneRoute uses OSRS Wiki shared-loadout data when browser access permits. Exact DPS/TTK remains the responsibility of the OSRS Wiki DPS calculator; RuneRoute focuses on trip economics and planning.</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id), N=id=>Number($(id).value)||0, V=id=>$(id).value;
+let importedGear=[], importedLoadouts=[], prices={};
+const ids={"Prayer potion(4)":2434,"Blood rune":565,"Death rune":560,"Tormented bracelet":19544,"Elidinis' ward":25985,"Magus ring":28313,"Virtus robe top":26241,"Virtus robe bottom":26243};
+const upgradeRules=[
+{name:"Tormented bracelet",replaces:["Barrows gloves"],pct:.045,why:"Large magic-damage upgrade over Barrows gloves."},
+{name:"Elidinis' ward",replaces:["Book of darkness","Mage's book"],pct:.025,why:"Cheap off-hand magic damage upgrade for one-handed powered staves."},
+{name:"Magus ring",replaces:["Seers ring (i)","Seers ring"],pct:.018,why:"Offensive ring upgrade when raw kill speed matters."},
+{name:"Virtus robe top",replaces:["Ahrim's robetop"],pct:.009,why:"Small powered-staff magic-damage increase."},
+{name:"Virtus robe bottom",replaces:["Ahrim's robeskirt"],pct:.009,why:"Small powered-staff magic-damage increase."}
+];
+function money(x){return Math.round(x).toLocaleString()+" gp"}
+function extractId(link){try{return new URL(link).searchParams.get("id")}catch(e){const m=String(link).match(/[?&]id=([^&]+)/);return m?m[1]:null}}
+function revive(v){if(Array.isArray(v))return v.map(revive);if(v&&typeof v==="object"){if(v._dataType==="Map"&&Array.isArray(v.m))return Object.fromEntries(v.m.map(([k,x])=>[k,revive(x)]));if(v._dataType==="Set"&&Array.isArray(v.s))return v.s.map(revive);const o={};for(const[k,x]of Object.entries(v))o[k]=revive(x);return o}return v}
+function findLoadouts(data){const c=[data?.loadouts,data?.players,data?.state?.loadouts,data?.data?.loadouts].filter(Array.isArray);if(c.length)return c[0];const found=[];(function walk(x){if(!x||typeof x!=="object")return;if(x.equipment&&typeof x.equipment==="object")found.push(x);Object.values(x).forEach(v=>{if(v&&typeof v==="object")walk(v)})})(data);return found}
+function equipmentNames(loadout){const eq=loadout?.equipment||loadout?.player?.equipment||{},names=[];for(const[slot,item]of Object.entries(eq)){if(!item)continue;if(typeof item==="string")names.push({slot,name:item});else if(item.name)names.push({slot,name:item.name,id:item.id})}return names}
+async function importLoadout(){const id=extractId(V("shareLink")),status=$("loadoutStatus");if(!id){status.className="loadoutStatus bad";status.textContent="That doesn't look like a Wiki DPS share link.";return}status.className="loadoutStatus";status.textContent="Importing shared loadout…";try{const r=await fetch("/runeroute/wiki-loadout?id="+encodeURIComponent(id));if(!r.ok)throw new Error("HTTP "+r.status);let payload=revive(await r.json());payload=payload.data??payload;importedLoadouts=findLoadouts(payload);if(!importedLoadouts.length)throw new Error("No loadouts found");$("loadoutSelect").innerHTML=importedLoadouts.map((x,i)=>`<option value="${i}">${x.name||"Loadout "+(i+1)}</option>`).join("");chooseLoadout(0);status.className="loadoutStatus ok";status.textContent="Imported successfully from the OSRS Wiki shared loadout."}catch(e){status.className="loadoutStatus bad";status.textContent="Could not import that loadout. Check the link and try again.";importedGear=[];renderGear();render()}}
+function chooseLoadout(i){importedGear=equipmentNames(importedLoadouts[Number(i)]||{});renderGear();render()}
+function renderGear(){$("gearList").innerHTML=importedGear.map(x=>`<span class="gearPill">${x.name}</span>`).join("");$("gearSummary").innerHTML=importedGear.length?importedGear.map(x=>`<b>${x.slot}:</b> ${x.name}`).join("<br>"):"No loadout imported yet.";renderUpgrades()}
+async function fetchPrices(){try{const r=await fetch("https://prices.runescape.wiki/api/v1/osrs/latest");if(r.ok){const j=await r.json();prices=j.data||{}}}catch(e){}render();renderUpgrades()}
+function itemPrice(name){const id=ids[name],p=prices[id]||prices[String(id)];return p?(p.high||p.low||null):null}
+function has(name){return importedGear.some(x=>x.name===name)}
+function renderUpgrades(){const base=N("ttk"),c=$("upgradeList");if(!importedGear.length){c.innerHTML='<div class="loadoutStatus">Import a Wiki loadout to get gear-aware upgrade suggestions.</div>';return}const s=upgradeRules.filter(r=>!has(r.name)&&r.replaces.some(has));if(!s.length){c.innerHTML='<div class="loadoutStatus ok">No obvious upgrade from the current shortlist.</div>';return}c.innerHTML=s.map(r=>{const price=itemPrice(r.name),newTtk=base*(1-r.pct),saved=base-newTtk;return `<div class="upgrade"><div class="upgradeTop"><div><div class="upgradeName">${r.name}</div><div class="sub">${r.why}</div></div><div class="cost">${price?money(price):"Price unavailable"}</div></div><div style="margin-top:8px"><span class="gain">≈ ${saved.toFixed(1)}s faster</span> · estimated TTK ${newTtk.toFixed(1)}s · ≈ ${(r.pct*100).toFixed(1)}% improvement</div></div>`}).join("")}
+function calcThermy(){const target=N("target"),ttk=N("ttk"),risk=V("risk"),redHeal=23,incomingDps=1.53;const hasSang=has("Sanguinesti staff")||!importedGear.length;const sangHeal=hasSang?20:0,foodHeal=(3*22*3/107)+(3*19/107),net=Math.max(1,ttk*incomingDps-sangHeal-foodHeal),drops=(8*3/107)+(8/107),dry=Math.max(0,(target*net-89)/redHeal),mean=Math.max(0,dry-target*drops);let doses=risk==="safe"?Math.max(mean,dry-4):risk==="expected"?mean:Math.max(0,mean-4);const pots=Math.ceil(doses/4),charges=hasSang?Math.ceil(target*ttk/2.4):0,tripKc=(89+pots*4*redHeal)/(net-redHeal*drops),mins=target*(ttk+9)/60;return{pots,charges,tripKc,mins,hasSang}}
+function renderProfit(c){const target=N("target"),gross=target*N("lootPerKill");let weaponCost=0,note="No powered-staff charge model";if(c.hasSang){const blood=itemPrice("Blood rune")||250,death=itemPrice("Death rune")||200;weaponCost=c.charges*(3*blood+death);note=`${c.charges.toLocaleString()} Sang charges × (3 blood + 1 death)`}const pp=itemPrice("Prayer potion(4)")||10000,prayerCost=c.pots*pp,fixed=N("fixedCost"),profit=gross-weaponCost-prayerCost-fixed,hours=c.mins/60,pph=hours>0?profit/hours:0;$("gross").textContent=money(gross);$("weaponCost").textContent="-"+money(weaponCost);$("prayerCost").textContent="-"+money(prayerCost);$("otherCost").textContent="-"+money(fixed);$("chargeCostNote").textContent=note;$("profitValue").textContent=(profit>=0?"+":"-")+money(Math.abs(profit));$("profitValue").className="money "+(profit>=0?"positive":"negative");$("profitPerHour").textContent=`≈ ${money(pph)}/hour after modelled supplies`}
+function render(){const c=calcThermy();$("headline").innerHTML=`Bring <b>${c.pots} Prayer potion(4)s</b>${c.hasSang?` + <b>${c.charges.toLocaleString()} Sang charges</b>`:""}`;$("tripKc").textContent=c.tripKc.toFixed(0);$("charges").textContent=c.hasSang?c.charges.toLocaleString():"—";$("duration").textContent=c.mins.toFixed(0)+" min";$("pots").textContent=c.pots+" × (4)";renderProfit(c);renderUpgrades()}
+$("importBtn").onclick=importLoadout;$("loadoutSelect").onchange=e=>chooseLoadout(e.target.value);document.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",render));fetchPrices();render();
+</script>
+</body></html>
