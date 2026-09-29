@@ -1,7 +1,7 @@
 const http=require("http"),fs=require("fs"),path=require("path"),https=require("https");
 const root=__dirname;
 const farmingApi=require("./farming-companion/api");
-const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",".png":"image/png",".jpg":"image/jpeg",".svg":"image/svg+xml",".webp":"image/webp"};
+const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",".png":"image/png",".jpg":"image/jpeg",".svg":"image/svg+xml",".webp":"image/webp",".ttf":"font/ttf"};
 
 function proxyWikiLoadout(req,res,url){
  const id=url.searchParams.get("id");
